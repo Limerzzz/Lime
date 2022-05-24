@@ -2,76 +2,41 @@
  * @Author: Limer
  * @Date: 2022-05-19 12:30:17
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-23 12:58:06
+ * @LastEditTime: 2022-05-24 20:10:58
  * @Description: A basic demo of server.
  */
-#include <netinet/in.h>
+#include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
-// include struct sockaddr_in
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <sys/epoll.h>
-#include <cstdio>
+#include "Epoll.h"
+#include "Socket.h"
 #include "util.h"
 
 #define port 1234
 #define ip_addr "127.0.0.1"
 #define buf_size 1024
-#define max_event 65535
-
-int setnonblocking(int fd) {
-    // ! cmd is F_GETFL/F_SETFL(not F_GETFD/F_SETFD)
-    int old_opt = fcntl(fd, F_GETFL);
-    fcntl(fd, F_SETFL, old_opt | O_NONBLOCK);
-    return old_opt;
-}
-
-void addfd_epoll(int epfd, int fd, uint32_t events) {
-    setnonblocking(fd);
-    struct epoll_event ev;
-    ev.data.fd = fd;
-    ev.events = events;
-    epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
-}
 
 int main() {
+    Socket* serv_sock = new Socket();
+    InetAddr* serv_addr = new InetAddr(ip_addr, port);
+    Epoll* ep = new Epoll();
+
+    serv_sock->bind(serv_addr);
+    serv_sock->listen();
+    serv_sock->setnonblocking();
+    ep->add_fd(serv_sock->get_fd(), EPOLLIN);
     int ret = -1;
-    // create a sockfd which represent the server.
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    errif(sockfd == -1, "fail to create a socket!\n");
-    // bind a sockaddr.
-    struct sockaddr_in servAddr;
-    servAddr.sin_addr.s_addr = ::inet_addr(ip_addr);
-    servAddr.sin_port = ::htons(port);
-    servAddr.sin_family = AF_INET;
-    ret = bind(sockfd, (sockaddr*)&servAddr, sizeof(servAddr));
-    errif(ret == -1, "fail to bind server address to the socket fd\n");
-    // listen the post
-    ret = listen(sockfd, 16);
-    errif(ret == -1, "fail to listen the socket!\n");
-
-    // create a epoll fd.
-    int epfd = epoll_create1(0);
-    // add sockfd to the listen list
-    addfd_epoll(epfd, sockfd, EPOLLIN);
-    struct epoll_event ev_arr[max_event];
     for (;;) {
-        memset(ev_arr, max_event, '\0');
-        int num_ev = epoll_wait(epfd, ev_arr, max_event, -1);
-        errif(num_ev == -1, "fail to wait epoll events!\n");
-
+        auto ev_vec = ep->poll();
+        printf("-2\n");
+        int num_ev = ev_vec.size();
         for (int i = 0; i < num_ev; ++i) {
-            int cur_fd = ev_arr[i].data.fd;
-            if (cur_fd == sockfd) {
-                struct sockaddr_in cntSockAddr;
-                bzero(&cntSockAddr, sizeof(cntSockAddr));
-                socklen_t len = 0;
-                int cntSockfd = accept(sockfd, (sockaddr*)&cntSockAddr, &len);
-                addfd_epoll(epfd, cntSockfd, EPOLLIN | EPOLLET);
-                printf("a new connection:%d \n", cntSockfd);
+            int cur_fd = ev_vec[i].data.fd;
+            if (cur_fd == serv_sock->get_fd()) {
+                auto cli_sock = serv_sock->accept();
+                ep->add_fd(cli_sock.get_fd(), EPOLLIN | EPOLLET);
+                cli_sock.setnonblocking();
+                ::printf("a new connection:%d \n", cli_sock.get_fd());
             } else {
                 char buf[buf_size];
                 memset(buf, buf_size, '\0');
@@ -85,7 +50,8 @@ int main() {
             }
         }
     }
-    close(sockfd);
-    close(epfd);
+    delete serv_sock;
+    delete serv_sock;
+    delete ep;
     return 0;
 }
