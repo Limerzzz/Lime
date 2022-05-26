@@ -2,12 +2,13 @@
  * @Author: Limer
  * @Date: 2022-05-19 12:30:17
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-24 20:10:58
+ * @LastEditTime: 2022-05-26 12:36:05
  * @Description: A basic demo of server.
  */
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "Channel.h"
 #include "Epoll.h"
 #include "Socket.h"
 #include "util.h"
@@ -24,18 +25,19 @@ int main() {
     serv_sock->bind(serv_addr);
     serv_sock->listen();
     serv_sock->setnonblocking();
-    ep->add_fd(serv_sock->get_fd(), EPOLLIN);
+    auto serv_chl = new Channel(ep, serv_sock->get_fd());
+    serv_chl->enableReading();
     int ret = -1;
     for (;;) {
-        auto ev_vec = ep->poll();
-        printf("-2\n");
+        std::vector<Channel*> ev_vec = ep->poll();
         int num_ev = ev_vec.size();
         for (int i = 0; i < num_ev; ++i) {
-            int cur_fd = ev_vec[i].data.fd;
+            int cur_fd = ev_vec[i]->getSockfd();
             if (cur_fd == serv_sock->get_fd()) {
                 auto cli_sock = serv_sock->accept();
-                ep->add_fd(cli_sock.get_fd(), EPOLLIN | EPOLLET);
                 cli_sock.setnonblocking();
+                auto chl = new Channel(ep, cli_sock.get_fd());
+                chl->enableReading();
                 ::printf("a new connection:%d \n", cli_sock.get_fd());
             } else {
                 char buf[buf_size];
@@ -50,8 +52,10 @@ int main() {
             }
         }
     }
+    serv_sock->close();
     delete serv_sock;
     delete serv_sock;
     delete ep;
+    ep->close();
     return 0;
 }
