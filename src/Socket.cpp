@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-24 12:36:48
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-24 20:02:45
+ * @LastEditTime: 2022-05-26 18:45:08
  * @Description:
  */
 #include "Socket.h"
@@ -38,12 +38,10 @@ void Socket::connect(InetAddr* addr) {
     errif(ret == -1, "fail to connect a socket!\n");
 }
 
-Socket Socket::accept() {
-    InetAddr cli_addr;
-    int cli_sock =
-        ::accept(sockfd, (sockaddr*)&cli_addr.addr, &cli_addr.addr_size);
+int Socket::accept(InetAddr* addr_) {
+    int cli_sock = ::accept(sockfd, (sockaddr*)&addr_->addr, &addr_->addr_size);
     errif(cli_sock == -1, "fail to accept a sock!\n");
-    return Socket(cli_sock);
+    return cli_sock;
 }
 
 int Socket::get_fd() { return sockfd; }
@@ -51,7 +49,7 @@ int Socket::get_fd() { return sockfd; }
 void Socket::close() { ::close(sockfd); }
 
 void Socket::setnonblocking() {
-    ::fcntl(sockfd, ::fcntl(sockfd, F_GETFL) | O_NONBLOCK);
+    ::fcntl(sockfd, F_SETFL, ::fcntl(sockfd, F_GETFL) | O_NONBLOCK);
 }
 
 InetAddr::InetAddr() {

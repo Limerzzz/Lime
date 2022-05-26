@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-23 13:29:07
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-24 19:27:15
+ * @LastEditTime: 2022-05-26 13:55:52
  * @Description: Socket class which package some function concerns socket
  * connection.
  */
@@ -23,7 +23,7 @@ class Socket {
     void bind(InetAddr*);
     void listen();
     void connect(InetAddr*);
-    Socket accept();
+    int accept(InetAddr*);
     int get_fd();
     void close();
     void setnonblocking();

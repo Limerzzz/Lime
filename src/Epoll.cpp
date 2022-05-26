@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-24 19:31:34
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 12:32:56
+ * @LastEditTime: 2022-05-26 13:11:37
  * @Description:
  */
 #include "Epoll.h"
@@ -29,8 +29,7 @@ std::vector<Channel*> Epoll::poll() {
     int ev_nums = ::epoll_wait(epfd, ev_arr, 1024, -1);
     errif(ev_nums == -1, "fail to load event!\n");
     for (int i = 0; i < ev_nums; ++i) {
-        // ! 大量的channel被建立了.这是不应该的.
-        Channel* chl = new Channel(this, ev_arr[i].data.fd);
+        Channel* chl = (Channel*)ev_arr[i].data.ptr;
         chl->setRevents(ev_arr[i].events);
         chl_vec.push_back(chl);
     }
@@ -43,7 +42,7 @@ void Epoll::updateChannel(Channel* chl) {
     int ret = -1;
     int sockfd = chl->getSockfd();
     struct epoll_event ev;
-    ev.data.fd = sockfd;
+    ev.data.ptr = chl;  // using ptr pointer to chl
     ev.events = chl->getEvents();
     if (!chl->isEpoll()) {
         ret = ::epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &ev);

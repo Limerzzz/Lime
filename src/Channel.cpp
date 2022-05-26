@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:21:20
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-25 13:55:30
+ * @LastEditTime: 2022-05-26 18:27:44
  * @Description:
  */
 #include "Channel.h"
@@ -28,3 +28,7 @@ void Channel::enableReading() {
     events = EPOLLIN | EPOLLET;
     ep->updateChannel(this);
 }
+
+void Channel::setcallback(std::function<void()> cb_) { cb = cb_; }
+
+void Channel::handleEvent() { cb(); }
