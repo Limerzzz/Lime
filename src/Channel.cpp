@@ -2,17 +2,20 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:21:20
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 18:27:44
+ * @LastEditTime: 2022-05-30 13:14:20
  * @Description:
  */
 #include "Channel.h"
-#include "Epoll.h"
+#include <sys/epoll.h>
+#include "EventLoop.h"
 
-Channel::Channel(Epoll* ep, int sockfd) : ep(ep), sockfd(sockfd) {
+Channel::Channel(EventLoop* ep, int sockfd) : ep(ep), sockfd(sockfd) {
     events = 0;
     revents = 0;
     inEpoll = false;
 }
+
+Channel::~Channel() {}
 
 int Channel::getSockfd() { return sockfd; }
 bool Channel::isEpoll() { return inEpoll; }

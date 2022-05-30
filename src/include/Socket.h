@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-23 13:29:07
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 13:55:52
+ * @LastEditTime: 2022-05-30 13:16:07
  * @Description: Socket class which package some function concerns socket
  * connection.
  */
@@ -20,12 +20,12 @@ class Socket {
    public:
     Socket();
     Socket(int);
+    ~Socket();
     void bind(InetAddr*);
     void listen();
     void connect(InetAddr*);
     int accept(InetAddr*);
     int get_fd();
-    void close();
     void setnonblocking();
 
    private:

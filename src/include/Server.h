@@ -2,20 +2,23 @@
  * @Author: Limer
  * @Date: 2022-05-26 13:28:52
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 13:59:52
+ * @LastEditTime: 2022-05-30 13:12:10
  * @Description:
  */
 #pragma once
 
-class Epoll;
+class EventLoop;
 class Channel;
 class Socket;
+class Acceptor;
 class Server {
    public:
-    Server(Epoll*);
+    Server(EventLoop*);
+    ~Server();
     void newConn(Socket*);
     void readMess(int);
 
    private:
-    Epoll* ep;
+    EventLoop* ep;
+    Acceptor* acpt;
 };

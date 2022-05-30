@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-26 18:09:08
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 18:43:50
+ * @LastEditTime: 2022-05-30 13:13:00
  * @Description:
  */
 #include "Server.h"
@@ -10,21 +10,21 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+#include "Acceptor.h"
 #include "Channel.h"
-#include "Epoll.h"
+#include "EventLoop.h"
 #include "Socket.h"
 
-Server::Server(Epoll* ep_) : ep(ep_) {
-    Socket* serv_sock = new Socket();
-    InetAddr* serv_addr = new InetAddr("127.0.0.1", 1234);
-    serv_sock->bind(serv_addr);
-    serv_sock->listen();
-    serv_sock->setnonblocking();
+Server::Server(EventLoop* ep_) : ep(ep_) {
+    acpt = new Acceptor(ep_);
+    std::function<void(Socket*)> cb =
+        std::bind(&Server::newConn, this, std::placeholders::_1);
+    acpt->SetNewConnCallback(cb);
+}
 
-    Channel* chl = new Channel(ep, serv_sock->get_fd());
-    std::function<void()> cb = std::bind(&Server::newConn, this, serv_sock);
-    chl->setcallback(cb);
-    chl->enableReading();
+Server::~Server() {
+    delete ep;
+    delete acpt;
 }
 
 void Server::newConn(Socket* serv_sock) {

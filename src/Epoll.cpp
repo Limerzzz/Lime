@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-24 19:31:34
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 13:11:37
+ * @LastEditTime: 2022-05-30 13:15:13
  * @Description:
  */
 #include "Epoll.h"
@@ -13,14 +13,7 @@
 #include "util.h"
 
 Epoll::Epoll() { epfd = ::epoll_create1(0); }
-
-void Epoll::add_fd(int sockfd, uint32_t events) {
-    struct epoll_event ev;
-    ev.data.fd = sockfd;
-    ev.events = events;
-    int ret = ::epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &ev);
-    errif(ret == -1, "fail to add sockfd to epoll listen list!\n");
-}
+Epoll::~Epoll() { close(epfd); }
 
 std::vector<Channel*> Epoll::poll() {
     std::vector<Channel*> chl_vec;
@@ -35,8 +28,6 @@ std::vector<Channel*> Epoll::poll() {
     }
     return chl_vec;
 }
-
-void Epoll::close() { ::close(epfd); }
 
 void Epoll::updateChannel(Channel* chl) {
     int ret = -1;

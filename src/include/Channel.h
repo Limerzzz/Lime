@@ -2,17 +2,19 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:03:14
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 18:27:24
+ * @LastEditTime: 2022-05-30 13:14:05
  * @Description:  used as a brige between epoll and socket.
  */
 #ifndef __CHANNEL_H__
 #define __CHANNEL_H__
 #include <cstdint>
 #include <functional>
-class Epoll;
+
+class EventLoop;
 class Channel {
    public:
-    Channel(Epoll*, int);
+    Channel(EventLoop*, int);
+    ~Channel();
     void enableReading();
     bool isEpoll();
     uint32_t getEvents();
@@ -26,7 +28,7 @@ class Channel {
     void handleEvent();
 
    private:
-    Epoll* ep;
+    EventLoop* ep;
     int sockfd;
     uint32_t events;   //  events which the channel should listen.
     uint32_t revents;  // events which the activate.

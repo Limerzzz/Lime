@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-24 12:36:48
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-26 18:45:08
+ * @LastEditTime: 2022-05-30 13:17:24
  * @Description:
  */
 #include "Socket.h"
@@ -12,7 +12,6 @@
 #include <sys/types.h>
 
 #include <unistd.h>
-#include "include/Socket.h"
 #include "string.h"
 #include "util.h"
 
@@ -22,6 +21,8 @@ Socket::Socket() {
 }
 
 Socket::Socket(int sock) : sockfd(sock) {}
+
+Socket::~Socket() { ::close(sockfd); }
 
 void Socket::bind(InetAddr* addr) {
     int ret = ::bind(sockfd, (sockaddr*)&addr->addr, addr->addr_size);
@@ -45,8 +46,6 @@ int Socket::accept(InetAddr* addr_) {
 }
 
 int Socket::get_fd() { return sockfd; }
-
-void Socket::close() { ::close(sockfd); }
 
 void Socket::setnonblocking() {
     ::fcntl(sockfd, F_SETFL, ::fcntl(sockfd, F_GETFL) | O_NONBLOCK);
