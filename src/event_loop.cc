@@ -2,16 +2,18 @@
  * @Author: Limer
  * @Date: 2022-05-27 13:30:01
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-27 13:38:21
+ * @LastEditTime: 2022-06-15 13:56:40
  * @Description:
  */
-#include "EventLoop.h"
+#include "event_loop.h"
 #include <vector>
-#include "Channel.h"
-#include "Epoll.h"
+#include "channel.h"
+#include "epoll.h"
+#include "thread_pool.h"
 
 EventLoop::EventLoop() {
     ep_ = new Epoll();
+    pool_ = new ThreadPool();
     isquit = false;
 }
 
@@ -25,3 +27,5 @@ void EventLoop::loop() {
         for (auto it : chl_vec) it->handleEvent();
     }
 }
+
+void EventLoop::addThread(std::function<void()> func) { pool_->add(func); }

@@ -2,13 +2,13 @@
  * @Author: Limer
  * @Date: 2022-05-30 12:29:04
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-30 13:11:51
+ * @LastEditTime: 2022-06-15 13:54:25
  * @Description:
  */
-#include "Acceptor.h"
-#include "Channel.h"
-#include "EventLoop.h"
-#include "Socket.h"
+#include "acceptor.h"
+#include "channel.h"
+#include "event_loop.h"
+#include "my_socket.h"
 
 Acceptor::Acceptor(EventLoop* ep) {
     ev_loop = ep;
@@ -22,6 +22,8 @@ Acceptor::Acceptor(EventLoop* ep) {
     std::function<void()> cb = std::bind(&Acceptor::AcceptNewConn, this);
     srv_chl->setcallback(cb);
     srv_chl->enableReading();
+    srv_chl->setUseThreadPool(false);
+    delete srv_addr;
 }
 
 void Acceptor::AcceptNewConn() { cb(srv_sock); }

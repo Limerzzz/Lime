@@ -2,17 +2,18 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:21:20
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-30 13:14:20
+ * @LastEditTime: 2022-06-15 13:54:34
  * @Description:
  */
-#include "Channel.h"
+#include "channel.h"
 #include <sys/epoll.h>
-#include "EventLoop.h"
+#include "event_loop.h"
 
 Channel::Channel(EventLoop* ep, int sockfd) : ep(ep), sockfd(sockfd) {
     events = 0;
     revents = 0;
     inEpoll = false;
+    useThreadPool = true;
 }
 
 Channel::~Channel() {}
@@ -33,5 +34,11 @@ void Channel::enableReading() {
 }
 
 void Channel::setcallback(std::function<void()> cb_) { cb = cb_; }
+void Channel::setUseThreadPool(bool tf) { useThreadPool = tf; };
 
-void Channel::handleEvent() { cb(); }
+void Channel::handleEvent() {
+    if (useThreadPool)
+        ep->addThread(cb);
+    else
+        cb();
+}

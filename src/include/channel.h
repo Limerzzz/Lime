@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:03:14
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-30 13:14:05
+ * @LastEditTime: 2022-06-08 18:50:16
  * @Description:  used as a brige between epoll and socket.
  */
 #ifndef __CHANNEL_H__
@@ -24,6 +24,7 @@ class Channel {
     void setRevents(uint32_t);
 
     void setcallback(std::function<void()>);
+    void setUseThreadPool(bool);
 
     void handleEvent();
 
@@ -34,6 +35,7 @@ class Channel {
     uint32_t revents;  // events which the activate.
     bool inEpoll;      // whether in the listen list of epollfd.
     std::function<void()> cb;
+    bool useThreadPool;
 };
 
 #endif
