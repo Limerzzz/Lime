@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-25 13:21:20
  * @LastEditors: Limer
- * @LastEditTime: 2022-06-15 13:54:34
+ * @LastEditTime: 2022-06-18 16:26:36
  * @Description:
  */
 #include "channel.h"
@@ -36,9 +36,4 @@ void Channel::enableReading() {
 void Channel::setcallback(std::function<void()> cb_) { cb = cb_; }
 void Channel::setUseThreadPool(bool tf) { useThreadPool = tf; };
 
-void Channel::handleEvent() {
-    if (useThreadPool)
-        ep->addThread(cb);
-    else
-        cb();
-}
+void Channel::handleEvent() { cb(); }

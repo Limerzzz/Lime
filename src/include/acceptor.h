@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-30 12:23:25
  * @LastEditors: Limer
- * @LastEditTime: 2022-05-30 13:10:31
+ * @LastEditTime: 2022-06-21 14:14:01
  * @Description:
  */
 #pragma once
@@ -19,9 +19,9 @@ class Acceptor {
     ~Acceptor();
 
    private:
-    Channel* srv_chl;
-    Socket* srv_sock;
-    EventLoop* ev_loop;
-    InetAddr* srv_addr;
-    std::function<void(Socket*)> cb;
+    Channel* srv_chl_;
+    Socket* srv_socket_;
+    EventLoop* ev_loop_;
+    InetAddr* srv_addr_;
+    std::function<void(Socket*)> new_conn_callback_;
 };

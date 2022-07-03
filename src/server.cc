@@ -2,7 +2,7 @@
  * @Author: Limer
  * @Date: 2022-05-26 18:09:08
  * @LastEditors: Limer
- * @LastEditTime: 2022-06-18 16:13:53
+ * @LastEditTime: 2022-06-24 13:40:59
  * @Description:
  */
 #include "server.h"
@@ -20,6 +20,7 @@
 
 Server::Server(EventLoop* ep) : main_reactor_(ep) {
     acceptor_ = new Acceptor(main_reactor_);
+    on_conn_ = nullptr;
     std::function<void(Socket*)> func =
         std::bind(&Server::newConn, this, std::placeholders::_1);
     acceptor_->SetNewConnCallback(func);
@@ -48,6 +49,11 @@ void Server::newConn(Socket* serv_sock) {
     // random schedule algorithm
     int idx = cnt_sock->get_fd() % sub_readctor_size_;
     Connection* conn = new Connection(sub_reactors_[idx], cnt_sock);
+    // TODO bind callback to function.
+
+    // 尽量避免使用如下写法,对于这种可以直接在Connection 内部进行绑定.
+    // std::function<void()> on_cb = std::bind(on_conn_, conn);
+    conn->set_on_cb(on_conn_);
     conns_[cnt_sock->get_fd()] = conn;
     std::function<void(Socket*)> cb =
         std::bind(&Server::deleteConn, this, std::placeholders::_1);
@@ -59,4 +65,8 @@ void Server::deleteConn(Socket* sk) {
     auto tmp = conns_[sk->get_fd()];
     conns_.erase(sk->get_fd());
     delete tmp;
+}
+
+void Server::set_on_conn(std::function<void(Connection*)> on_conn) {
+    on_conn_ = on_conn;
 }
